@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Цифровой Рыцарь: Этикет и Безопасность</title>
+    <style>
+        :root {
+            --primary: #8e44ad;
+            --secondary: #3498db;
+            --bg: #f0f2f5;
+            --card: #ffffff;
+            --text: #1c1e21;
+            --success: #2ecc71;
+            --error: #e74c3c;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #phone-emulator {
+            width: 360px;
+            height: 640px;
+            background: #000;
+            border-radius: 40px;
+            border: 12px solid #333;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+
+        #screen {
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status-bar {
+            height: 25px;
+            background: #ddd;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 12px;
+            align-items: center;
+        }
+
+        .app-header {
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .chat-area {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .msg {
+            max-width: 80%;
+            padding: 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            animation: fadeIn 0.3s;
+        }
+
+        .msg-received {
+            background: #e4e6eb;
+            align-self: flex-start;
+        }
+
+        .msg-system {
+            background: #fff3cd;
+            align-self: center;
+            font-size: 0.7rem;
+            text-align: center;
+            border: 1px solid #ffeeba;
+        }
+
+        .options-grid {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #ddd;
+            display: grid;
+            gap: 8px;
+        }
+
+        .action-btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+
+        .action-btn:hover { filter: brightness(1.1); }
+
+        #feedback-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.95);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .score-badge {
+            color: var(--primary);
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="phone-emulator">
+    <div id="screen">
+        <div class="status-bar">
+            <span>12:00</span>
+            <span>📶 🔋 100%</span>
+        </div>
+        <div class="app-header">🛡️ ЦИФРОВОЙ ЩИТ: ЧАТ</div>
+        
+        <div class="chat-area" id="chat">
+            <div class="msg-system">Вы зашли в «Школьный чат 5-Б»</div>
+        </div>
+
+        <div class="options-grid" id="controls">
+            </div>
+
+        <div id="feedback-overlay">
+            <div class="score-badge" id="fb-title"></div>
+            <p id="fb-text"></p>
+            <button class="action-btn" id="next-task" style="width: 100%">Далее</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const scenarios = [
+        {
+            message: "Хейтер99: 'Ты так ужасно играешь в Roblox, удали игру и не позорься! Все в классе над тобой смеются.'",
+            options: [
+                { text: "Ответить: 'Сам такой!'", correct: false, fb: "Плохая идея! Это «кормит тролля» и раздувает конфликт." },
+                { text: "Алгоритм: Стоп - Блок - Сообщи", correct: true, fb: "Верно! Не вступай в спор, заблокируй и расскажи взрослым." },
+                { text: "Уйти из игры навсегда", correct: false, fb: "Это поражение. Ты имеешь право играть, просто защити свои границы." }
+            ]
+        },
+        {
+            message: "Друг: 'Смотри, я сфоткал дневник нашей отличницы с двойкой! Давай выложим в общую группу?'",
+            options: [
+                { text: "Да, это смешно!", correct: false, fb: "Это кибербуллинг и нарушение приватности. Подумай, как было бы ей." },
+                { text: "Нет, это некрасиво. Удали.", correct: true, fb: "Правильно! Суперсила доброты в том, чтобы не участвовать в травле." },
+                { text: "Переслать только лучшим друзьям", correct: false, fb: "Даже в личке это остается распространением чужих данных." }
+            ]
+        },
+        {
+            message: "Система: Вы хотите опубликовать фото, где на заднем плане видно ваш домашний адрес и номер школы.",
+            options: [
+                { text: "Опубликовать (красиво же)", correct: false, fb: "Твой цифровой след виден всем. Не делись адресом с незнакомцами!" },
+                { text: "Замазать адрес в редакторе", correct: true, fb: "Отлично! Защита приватности — важная часть цифровой гигиены." },
+                { text: "Отправить только в сторис", correct: false, fb: "Сторис можно заскринить. Интернет помнит всё!" }
+            ]
+        }
+    ];
+
+    let currentStep = 0;
+    let score = 0;
+
+    const chat = document.getElementById('chat');
+    const controls = document.getElementById('controls');
+    const overlay = document.getElementById('feedback-overlay');
+    const fbTitle = document.getElementById('fb-title');
+    const fbText = document.getElementById('fb-text');
+
+    function renderStep() {
+        const s = scenarios[currentStep];
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'msg msg-received';
+        msgDiv.innerHTML = s.message;
+        chat.appendChild(msgDiv);
+        chat.scrollTop = chat.scrollHeight;
+
+        controls.innerHTML = '';
+        s.options.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'action-btn';
+            btn.textContent = opt.text;
+            btn.onclick = () => handleChoice(opt);
+            controls.appendChild(btn);
+        });
+    }
+
+    function handleChoice(opt) {
+        if(opt.correct) score++;
+        
+        fbTitle.textContent = opt.correct ? "✅ КРУТО!" : "❌ ВНИМАНИЕ!";
+        fbTitle.style.color = opt.correct ? "var(--success)" : "var(--error)";
+        fbText.textContent = opt.fb;
+        overlay.style.display = 'flex';
+    }
+
+    document.getElementById('next-task').onclick = () => {
+        overlay.style.display = 'none';
+        currentStep++;
+        if(currentStep < scenarios.length) {
+            renderStep();
+        } else {
+            showFinal();
+        }
+    };
+
+    function showFinal() {
+        chat.innerHTML = "";
+        const finalMsg = document.createElement('div');
+        finalMsg.className = 'msg-system';
+        finalMsg.style.fontSize = "1.2rem";
+        finalMsg.innerHTML = `Миссия завершена!<br>Твой ранг: ${score === 3 ? 'Цифровой Рыцарь' : 'Ученик Защитника'}<br>Счет: ${score}/3`;
+        chat.appendChild(finalMsg);
+        controls.innerHTML = '<button class="action-btn" onclick="location.reload()">Начать сначала</button>';
+    }
+
+    renderStep();
+</script>
+</body>
+</html>
